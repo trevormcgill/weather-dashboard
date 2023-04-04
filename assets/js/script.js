@@ -15,6 +15,14 @@ var tempElements = document.querySelectorAll(".temp");
 var humidityElements = document.querySelectorAll(".humidity");
 var windElements = document.querySelectorAll(".wind");
 
+
+Object.defineProperty(String.prototype, 'capitalize', {
+  value: function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+  },
+  enumerable: false
+});
+
 // Load search history from local storage and render it on page load
 const searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || [];
 renderSearchHistory();
@@ -72,11 +80,8 @@ function updateCurrentWeather(weatherData) {
 
   document.querySelector(".city").textContent = cityName;
   document.querySelector("#currentDay").textContent = `(${date})`;
-  document.querySelector(".description").textContent =
-    weatherData.weather[0].description;
-  document.querySelector(
-    ".temp"
-  ).textContent = `Temperature: ${temperature} °F`;
+  document.querySelector(".description").textContent = weatherData.weather[0].description;
+  document.querySelector(".temp").textContent = `Temperature: ${temperature} °F`;
   document.querySelector(".humidity").textContent = `Humidity: ${humidity}%`;
   document.querySelector(".wind").textContent = `Wind Speed: ${windSpeed} MPH`;
   document.querySelector(".weather-icon").setAttribute("src", weatherIconUrl);
@@ -101,47 +106,25 @@ function getFiveDayForecast(city) {
     })
     .then(function (data) {
       console.log(data);
-      renderFiveDayForecast(data);
+      handleFiveDay(data.list); 
     })
     .catch(function (error) {
       console.log("Error: " + error);
     });
 }
 
-// Function to render the 5-day forecast section with data from the OpenWeather API
-function renderFiveDayForecast(forecastData) {
-  for (var i = 0; i < 5; i++) {
-    var forecast = forecastData.list[i];
-    var date = dayjs(forecast.dt_txt).format("M/D/YYYY");
-    var weatherIconUrl = `https://openweathermap.org/img/w/${forecast.weather[i].icon}.png`;
-    var temperature = forecast.main.temp;
-    var humidity = forecast.main.humidity;
-
-    cityNameElements[i].textContent = `${date}`;
-    /*   currentWeatherElements[i].textContent = forecast.weather[i].main; */
-    descriptionElements[i].textContent = forecast.weather[i].description;
-    tempElements[i].textContent = `Temp: ${temperature} °F`;
-    humidityElements[i].textContent = `Humidity: ${humidity}%`;
-    weatherIconElements[i].setAttribute("src", weatherIconUrl);
+function handleFiveDay(data){
+  for(let i = 6; i < data.length; i+=8){
+    let icon = data[i].weather[0].icon;
+    let iconURL = "https://openweathermap.org/img/wn/" + icon +".png";
+    let iconElement = $('<img>').attr('src', iconURL).attr('width', '45').attr('height', '45');
+    $(`#forecast-date-${i}`).text(dayjs(data[i].dt_txt.split(" ")[0]).format("MMM-DD-YYYY"));
+    $(`#forecast-temp-${i}`).text(`${data[i].main.temp} °F`);
+    $(`#forecast-wind-${i}`).text(`${data[i].wind.speed} mph`);
+    $(`#forecast-humid-${i}`).text(`${data[i].main.humidity} %`);
+    $(`#status-${i}`).text(`${data[i].weather[0].description.capitalize()}`).append(iconElement);
   }
 }
-
-// Function to get the 5-day forecast data from the OpenWeather API
-/* function getFiveDayForecast(city) {
-  const apiUrl = `${apiEndpoint}?q=${city}&appid=${apiKey}&units=imperial`;
-
-  fetch(apiUrl)
-    .then(function (response) {
-      return response.json();
-    })
-    .then(function (data) {
-      console.log(data);
-      renderFiveDayForecast(data);
-    })
-    .catch(function (error) {
-      console.log("Error: " + error);
-    });
-} */
 
 // When the page loads, get the weather data for the last searched city (if available)
 if (searchHistory.length > 0) {
