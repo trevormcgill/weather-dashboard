@@ -122,7 +122,7 @@ function handleFiveDay(data){
     $(`#forecast-temp-${i}`).text(`${data[i].main.temp} °F`);
     $(`#forecast-wind-${i}`).text(`${data[i].wind.speed} mph`);
     $(`#forecast-humid-${i}`).text(`${data[i].main.humidity} %`);
-    $(`#status-${i}`).text(`${data[i].weather[0].description.capitalize()}`).append(iconElement);
+    $(`#conditions-${i}`).text(`${data[i].weather[0].description.capitalize()}`).append(iconElement);
   }
 }
 
